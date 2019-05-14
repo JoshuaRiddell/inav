@@ -182,29 +182,8 @@ static bool deviceInit(baroDev_t *baro)
  
     delay(10);
 
-    // busWrite(baro->busDev, CMD_RESET, CMD_RESET);
-
     busWrite(baro->busDev, 0xFF, CMD_RESET);
-    delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
-    // busWriteBuf(baro->busDev, 0xFF, data, 1);
-    // delay(1);
-    
+        
     delay(10);
 
     // read all coefficients

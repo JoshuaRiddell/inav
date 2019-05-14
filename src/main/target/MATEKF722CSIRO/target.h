@@ -67,7 +67,7 @@
 #define USE_MPU_DATA_READY_SIGNAL
 
 // *************** I2C /Baro/Mag *********************
-#define USE_I2C
+// #define USE_I2C
 // #define USE_I2C_DEVICE_1
 // #define I2C1_SCL                PB8
 // #define I2C1_SDA                PB9
@@ -78,7 +78,7 @@
 #define SOFT_I2C_SCL                PB8
 #define SOFT_I2C_SDA                PB9
 
-// #define DEFAULT_I2C_BUS         BUS_I2C_1
+// #define DEFAULT_I2C_BUS         BUS_I2C1
 #define DEFAULT_I2C_BUS         BUS_I2C_EMULATED
 
 #define USE_BARO
