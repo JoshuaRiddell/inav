@@ -17,6 +17,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <build/debug.h>
 
 #include <platform.h>
 
@@ -27,12 +28,14 @@
 #include "drivers/bus.h"
 #include "drivers/time.h"
 #include "drivers/barometer/barometer.h"
-#include "drivers/barometer/barometer_ms56xx.h"
+#include "drivers/barometer/barometer_ms5837xx.h"
 
-#if defined(USE_BARO_MS5607) || defined(USE_BARO_MS5611)
+#include "drivers/logging.h"
 
-// MS56xx, Standard address 0x77
-#define MS56XX_ADDR             0x77
+#if defined(USE_BARO_MS583730)
+
+// MS5837xx, Standard address 0x76
+#define MS5837xx_ADDR             0x76
 
 #define CMD_RESET               0x1E // ADC reset command
 #define CMD_ADC_READ            0x00 // ADC read command
@@ -45,83 +48,91 @@
 #define CMD_ADC_2048            0x06 // ADC OSR=2048
 #define CMD_ADC_4096            0x08 // ADC OSR=4096
 #define CMD_PROM_RD             0xA0 // Prom read command
-#define PROM_NB                 8
+#define PROM_NB                 7
 
-STATIC_UNIT_TESTED uint32_t ms56xx_ut;  // static result of temperature measurement
-STATIC_UNIT_TESTED uint32_t ms56xx_up;  // static result of pressure measurement
-STATIC_UNIT_TESTED uint16_t ms56xx_c[PROM_NB];  // on-chip ROM
-static uint8_t ms56xx_osr = CMD_ADC_4096;
+STATIC_UNIT_TESTED uint32_t ms5837xx_ut;  // static result of temperature measurement
+STATIC_UNIT_TESTED uint32_t ms5837xx_up;  // static result of pressure measurement
+STATIC_UNIT_TESTED uint16_t ms5837xx_c[PROM_NB];  // on-chip ROM
+static uint8_t ms5837xx_osr = CMD_ADC_4096;
 
-STATIC_UNIT_TESTED int8_t ms56xx_crc(uint16_t *prom)
+STATIC_UNIT_TESTED int8_t ms5837xx_crc(uint16_t *prom)
 {
-    int32_t i, j;
-    uint32_t res = 0;
-    uint8_t crc = prom[7] & 0xF;
-    prom[7] &= 0xFF00;
+    uint8_t crc = ((prom[0] & 0xF000) >> 12);
 
-    bool blankEeprom = true;
 
-    for (i = 0; i < 16; i++) {
-        if (prom[i >> 1]) {
-            blankEeprom = false;
-        }
-        if (i & 1)
-            res ^= ((prom[i >> 1]) & 0x00FF);
+
+    uint8_t cnt, n_bit;
+    uint16_t n_rem;
+
+    n_rem = 0x00;
+    prom[7] = 0;
+    prom[0] = (0x0FFF & (prom[0])); // Clear the CRC byte
+
+    for (cnt = 0; cnt < (7 + 1) * 2; cnt++)
+    {
+
+        // Get next byte
+        if (cnt % 2 == 1)
+            n_rem ^= prom[cnt >> 1] & 0x00FF;
         else
-            res ^= (prom[i >> 1] >> 8);
-        for (j = 8; j > 0; j--) {
-            if (res & 0x8000)
-                res ^= 0x1800;
-            res <<= 1;
+            n_rem ^= prom[cnt >> 1] >> 8;
+
+        for (n_bit = 8; n_bit > 0; n_bit--)
+        {
+
+            if (n_rem & 0x8000)
+                n_rem = (n_rem << 1) ^ 0x3000;
+            else
+                n_rem <<= 1;
         }
     }
-    prom[7] |= crc;
-    if (!blankEeprom && crc == ((res >> 12) & 0xF))
-        return 0;
+    n_rem >>= 12;
+    n_rem &= 0x000F;
 
-    return -1;
+    crc = 11;
+
+    return !(n_rem == crc);
 }
 
-static uint32_t ms56xx_read_adc(baroDev_t *baro)
+static uint32_t ms5837xx_read_adc(baroDev_t *baro)
 {
     uint8_t rxbuf[3];
     busReadBuf(baro->busDev, CMD_ADC_READ, rxbuf, 3);
     return (rxbuf[0] << 16) | (rxbuf[1] << 8) | rxbuf[2];
 }
 
-static bool ms56xx_start_ut(baroDev_t *baro)
+static bool ms5837xx_start_ut(baroDev_t *baro)
 {
-    return busWrite(baro->busDev, CMD_ADC_CONV + CMD_ADC_D2 + ms56xx_osr, 1);
+    return busWrite(baro->busDev, CMD_ADC_CONV + CMD_ADC_D2 + ms5837xx_osr, 1);
 }
 
-static bool ms56xx_get_ut(baroDev_t *baro)
+static bool ms5837xx_get_ut(baroDev_t *baro)
 {
-    ms56xx_ut = ms56xx_read_adc(baro);
+    ms5837xx_ut = ms5837xx_read_adc(baro);
     return true;
 }
 
-static bool ms56xx_start_up(baroDev_t *baro)
+static bool ms5837xx_start_up(baroDev_t *baro)
 {
-    return busWrite(baro->busDev, CMD_ADC_CONV + CMD_ADC_D1 + ms56xx_osr, 1);
+    return busWrite(baro->busDev, CMD_ADC_CONV + CMD_ADC_D1 + ms5837xx_osr, 1);
 }
 
-static bool ms56xx_get_up(baroDev_t *baro)
+static bool ms5837xx_get_up(baroDev_t *baro)
 {
-    ms56xx_up = ms56xx_read_adc(baro);
+    ms5837xx_up = ms5837xx_read_adc(baro);
     return true;
 }
 
-#ifdef USE_BARO_MS5611
-STATIC_UNIT_TESTED bool ms5611_calculate(baroDev_t *baro, int32_t *pressure, int32_t *temperature)
+STATIC_UNIT_TESTED bool ms583730_calculate(baroDev_t *baro, int32_t *pressure, int32_t *temperature)
 {
     UNUSED(baro);
     uint32_t press;
     int64_t temp;
     int64_t delt;
-    int64_t dT = (int64_t)ms56xx_ut - ((uint64_t)ms56xx_c[5] * 256);
-    int64_t off = ((int64_t)ms56xx_c[2] << 16) + (((int64_t)ms56xx_c[4] * dT) >> 7);
-    int64_t sens = ((int64_t)ms56xx_c[1] << 15) + (((int64_t)ms56xx_c[3] * dT) >> 8);
-    temp = 2000 + ((dT * (int64_t)ms56xx_c[6]) >> 23);
+    int64_t dT = (int64_t)ms5837xx_ut - ((uint64_t)ms5837xx_c[5] * 256);
+    int64_t off = ((int64_t)ms5837xx_c[2] << 16) + (((int64_t)ms5837xx_c[4] * dT) >> 7);
+    int64_t sens = ((int64_t)ms5837xx_c[1] << 15) + (((int64_t)ms5837xx_c[3] * dT) >> 8);
+    temp = 2000 + ((dT * (int64_t)ms5837xx_c[6]) >> 23);
 
     if (temp < 2000) { // temperature lower than 20degC
         delt = temp - 2000;
@@ -136,7 +147,7 @@ STATIC_UNIT_TESTED bool ms5611_calculate(baroDev_t *baro, int32_t *pressure, int
         }
     temp -= ((dT * dT) >> 31);
     }
-    press = ((((int64_t)ms56xx_up * sens) >> 21) - off) >> 15;
+    press = ((((int64_t)ms5837xx_up * sens) >> 21) - off) >> 15;
 
     if (pressure)
         *pressure = press;
@@ -145,94 +156,87 @@ STATIC_UNIT_TESTED bool ms5611_calculate(baroDev_t *baro, int32_t *pressure, int
 
     return true;
 }
-#endif
-
-#ifdef USE_BARO_MS5607
-STATIC_UNIT_TESTED bool ms5607_calculate(baroDev_t *baro, int32_t *pressure, int32_t *temperature)
-{
-    UNUSED(baro);
-    uint32_t press;
-    int64_t temp;
-    int64_t delt;
-    int64_t dT = (int64_t)ms56xx_ut - ((uint64_t)ms56xx_c[5] << 8);
-    int64_t off = ((int64_t)ms56xx_c[2] << 17) + (((int64_t)ms56xx_c[4] * dT) >> 6);
-    int64_t sens = ((int64_t)ms56xx_c[1] << 16) + (((int64_t)ms56xx_c[3] * dT) >> 7);
-    temp = 2000 + ((dT * (int64_t)ms56xx_c[6]) >> 23);
-
-    if (temp < 2000) { // temperature lower than 20degC
-        delt = temp - 2000;
-        delt = delt * delt;
-        off -= (61 * delt) >> 4;
-        sens -= 2 * delt;
-        if (temp < -1500) { // temperature lower than -15degC
-            delt = temp + 1500;
-            delt = delt * delt;
-            off -= 15 * delt;
-            sens -= 8 * delt;
-        }
-        temp -= ((dT * dT) >> 31);
-    }
-    press = ((((int64_t)ms56xx_up * sens) >> 21) - off) >> 15;
-
-    if (pressure)
-        *pressure = press;
-    if (temperature)
-        *temperature = temp;
-
-    return true;
-}
-#endif
 
 #define DETECTION_MAX_RETRY_COUNT   5
 static bool deviceDetect(busDevice_t * dev)
 {
-    for (int retry = 0; retry < DETECTION_MAX_RETRY_COUNT; retry++) {
-        uint8_t sig = 0;
+    // for (int retry = 0; retry < DETECTION_MAX_RETRY_COUNT; retry++) {
+    //     uint8_t sig = 0;
 
-        delay(10);
+    //     delay(10);
 
-        bool ack = busRead(dev, CMD_PROM_RD, &sig);
-        if (ack && sig != 0xFF) {
-            return true;
-        }
-    };
+    //     bool ack = busRead(dev, CMD_PROM_RD, &sig);
+    //     if (ack && sig != 0xFF) {
+    //         return true;
+    //     }
+    // };
 
-    return false;
+    // return false;
+
+    return true;
 }
 
 static bool deviceInit(baroDev_t *baro)
 {
     busSetSpeed(baro->busDev, BUS_SPEED_STANDARD);
+ 
+    delay(10);
 
-    busWrite(baro->busDev, CMD_RESET, 1);
-    delay(5);
+    // busWrite(baro->busDev, CMD_RESET, CMD_RESET);
+
+    busWrite(baro->busDev, 0xFF, CMD_RESET);
+    delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    // busWriteBuf(baro->busDev, 0xFF, data, 1);
+    // delay(1);
+    
+    delay(10);
 
     // read all coefficients
     for (int i = 0; i < PROM_NB; i++) {
         uint8_t rxbuf[2] = { 0, 0 };
-        busReadBuf(baro->busDev, CMD_PROM_RD + i * 2, rxbuf, 2);
-        ms56xx_c[i] = (rxbuf[0] << 8 | rxbuf[1]);
+
+        busWrite(baro->busDev, 0xFF, CMD_PROM_RD + i * 2);
+        busReadBuf(baro->busDev, 0xFF, rxbuf, 2);
+        // busReadBuf(baro->busDev, CMD_PROM_RD + i * 2, rxbuf, 2);
+        ms5837xx_c[i] = (rxbuf[0] << 8 | rxbuf[1]);
     }
 
+    addBootlogEvent6(BOOT_EVENT_BARO_DETECTION, BOOT_EVENT_FLAGS_NONE, ms5837xx_c[0], ms5837xx_c[1], ms5837xx_c[2], ms5837xx_c[3]);
+
     // check crc, bail out if wrong - we are probably talking to BMP085 w/o XCLR line!
-    if (ms56xx_crc(ms56xx_c) != 0) {
+    if (ms5837xx_crc(ms5837xx_c) != 0) {
         return false;
     }
 
     baro->ut_delay = 10000;
     baro->up_delay = 10000;
-    baro->start_ut = ms56xx_start_ut;
-    baro->get_ut = ms56xx_get_ut;
-    baro->start_up = ms56xx_start_up;
-    baro->get_up = ms56xx_get_up;
+    baro->start_ut = ms5837xx_start_ut;
+    baro->get_ut = ms5837xx_get_ut;
+    baro->start_up = ms5837xx_start_up;
+    baro->get_up = ms5837xx_get_up;
 
     return true;
 }
 
-#ifdef USE_BARO_MS5607
-bool ms5607Detect(baroDev_t *baro)
+bool ms583730Detect(baroDev_t *baro)
 {
-    baro->busDev = busDeviceInit(BUSTYPE_ANY, DEVHW_MS5607, 0, OWNER_BARO);
+    baro->busDev = busDeviceInit(BUSTYPE_I2C, DEVHW_MS583730, 0, OWNER_BARO);
     if (baro->busDev == NULL) {
         return false;
     }
@@ -247,34 +251,9 @@ bool ms5607Detect(baroDev_t *baro)
         return false;
     }
 
-    baro->calculate = ms5607_calculate;
+    baro->calculate = ms583730_calculate;
 
     return true;
 }
-#endif
-
-#ifdef USE_BARO_MS5611
-bool ms5611Detect(baroDev_t *baro)
-{
-    baro->busDev = busDeviceInit(BUSTYPE_ANY, DEVHW_MS5611, 0, OWNER_BARO);
-    if (baro->busDev == NULL) {
-        return false;
-    }
-
-    if (!deviceDetect(baro->busDev)) {
-        busDeviceDeInit(baro->busDev);
-        return false;
-    }
-
-    if (!deviceInit(baro)) {
-        busDeviceDeInit(baro->busDev);
-        return false;
-    }
-
-    baro->calculate = ms5611_calculate;
-
-    return true;
-}
-#endif
 
 #endif

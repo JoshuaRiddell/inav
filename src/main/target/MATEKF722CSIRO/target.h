@@ -23,7 +23,7 @@
 #   define USBD_PRODUCT_STRING  "MatekF722Mini"
 #else
 #   define TARGET_BOARD_IDENTIFIER "MF7S"
-#   define USBD_PRODUCT_STRING  "MatekF722SE"
+#   define USBD_PRODUCT_STRING  "MatekF722CSIRO"
 #endif
 
 #define LED0                    PA14  //Blue   SWCLK
@@ -76,6 +76,7 @@
 #define BARO_I2C_BUS            BUS_I2C1
 #define USE_BARO_BMP280
 #define USE_BARO_MS5611
+#define USE_BARO_MS583730
 
 #define USE_MAG
 #define MAG_I2C_BUS             BUS_I2C1

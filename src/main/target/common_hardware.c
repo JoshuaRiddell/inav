@@ -117,6 +117,13 @@
     #endif
 #endif
 
+#if defined(USE_BARO_MS583730)
+    #if !defined(MS583730_I2C_BUS)
+        #define MS583730_I2C_BUS BARO_I2C_BUS
+    #endif
+    BUSDEV_REGISTER_I2C(busdev_ms583730,      DEVHW_MS583730,       MS583730_I2C_BUS,     0x76,               NONE,           DEVFLAGS_USE_RAW_REGISTERS);
+#endif
+
 /** COMPASS SENSORS **/
 #if !defined(USE_TARGET_MAG_HARDWARE_DESCRIPTORS)
 #if defined(USE_MAG_HMC5883)

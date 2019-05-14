@@ -29,9 +29,9 @@ typedef enum {
     BARO_BMP280 = 4,
     BARO_MS5607 = 5,
     BARO_LPS25H = 6,
-    BARO_FAKE = 7,
-    BARO_MS583730 = 8,
-    BARO_MAX = BARO_MS583730
+    BARO_MS583730 = 7,
+    BARO_FAKE = 8,
+    BARO_MAX = BARO_FAKE
 } baroSensor_e;
 
 typedef struct barometerConfig_s {

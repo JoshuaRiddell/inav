@@ -82,6 +82,19 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
 
     switch (baroHardwareToUse) {
     case BARO_AUTODETECT:
+    case BARO_MS583730:
+#ifdef USE_BARO_MS583730
+        if (ms583730Detect(dev)) {
+            baroHardware = BARO_MS583730;
+            break;
+        }
+#endif
+        /* If we are asked for a specific sensor - break out, otherwise - fall through and continue */
+        if (baroHardwareToUse != BARO_AUTODETECT) {
+            break;
+        }
+        FALLTHROUGH;
+
     case BARO_BMP085:
 #ifdef USE_BARO_BMP085
         if (bmp085Detect(dev)) {
@@ -99,19 +112,6 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
 #ifdef USE_BARO_MS5607
         if (ms5607Detect(dev)) {
             baroHardware = BARO_MS5607;
-            break;
-        }
-#endif
-        /* If we are asked for a specific sensor - break out, otherwise - fall through and continue */
-        if (baroHardwareToUse != BARO_AUTODETECT) {
-            break;
-        }
-        FALLTHROUGH;
-
-    case BARO_MS583730:
-#ifdef USE_BARO_MS583730
-        if (ms583730Detect(dev)) {
-            baroHardware = BARO_MS583730;
             break;
         }
 #endif
@@ -178,7 +178,7 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
         break;
     }
 
-    addBootlogEvent6(BOOT_EVENT_BARO_DETECTION, BOOT_EVENT_FLAGS_NONE, baroHardware, 0, 0, 0);
+    // addBootlogEvent6(BOOT_EVENT_BARO_DETECTION, BOOT_EVENT_FLAGS_NONE, baroHardware, 0, 0, 0);
 
     if (baroHardware == BARO_NONE) {
         sensorsClear(SENSOR_BARO);

@@ -28,7 +28,7 @@ DEBUG     ?=
 BUILD_SUFFIX ?=
 
 # Serial port/Device for flashing
-SERIAL_DEVICE   ?= $(firstword $(wildcard /dev/ttyUSB*) no-port-found)
+SERIAL_DEVICE   ?= $(firstword $(wildcard /dev/tty.usbmodem*) no-port-found)
 
 # Flash size (KB).  Some low-end chips actually have more flash than advertised, use this to override.
 FLASH_SIZE ?=
@@ -417,10 +417,8 @@ clean_all:$(CLEAN_TARGETS)
 ## all_clean         : clean all valid targets (alias for above)
 all_clean:$(TARGETS_CLEAN)
 
-flash_$(TARGET): $(TARGET_HEX)
-	$(V0) stty -F $(SERIAL_DEVICE) raw speed 115200 -crtscts cs8 -parenb -cstopb -ixon
-	$(V0) echo -n 'R' >$(SERIAL_DEVICE)
-	$(V0) stm32flash -w $(TARGET_HEX) -v -g 0x0 -b 115200 $(SERIAL_DEVICE)
+flash_$(TARGET): $(TARGET_BIN)
+	dfu-util -S "STM32FxSTM32" -a 0 -s 0x8000000 -D $(TARGET_BIN) -R
 
 ## flash             : flash firmware (.hex) onto flight controller
 flash: flash_$(TARGET)

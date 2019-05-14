@@ -18,5 +18,4 @@
 #pragma once
 #include "sensors/barometer.h" // for baroSensor_e enum
 
-bool ms5607Detect(baroDev_t *baro);
-bool ms5611Detect(baroDev_t *baro);
+bool ms583730Detect(baroDev_t *baro);
