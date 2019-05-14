@@ -31,6 +31,9 @@
 
 #ifdef SOFT_I2C
 
+#define  I2C_Direction_Transmitter      ((uint8_t)0x00)
+#define  I2C_Direction_Receiver         ((uint8_t)0x01)
+
 static IO_t scl;
 static IO_t sda;
 static volatile uint16_t i2cErrorCount = 0;
