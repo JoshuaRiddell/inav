@@ -33,6 +33,8 @@
 #include "build/debug.h"
 #include "drivers/time.h"
 
+#include "drivers/logging.h"
+
 #if defined(USE_RANGEFINDER_BRPING)
 #include "drivers/rangefinder/rangefinder_brping.h"
 #include "io/rangefinder.h"
@@ -88,10 +90,12 @@ bool brpingDetect(rangefinderDev_t *rangefinder)
     rangefinder->busDev = busDeviceInit(BUSTYPE_I2C, DEVHW_ARDUINO, 0, OWNER_RANGEFINDER);
 
     if (rangefinder->busDev == NULL) {
+    addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 10, 0, 0, 0);
         return false;
     }
 
     if (!deviceDetect(rangefinder->busDev)) {
+    addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 11, 0, 0, 0);
         busDeviceDeInit(rangefinder->busDev);
         return false;
     }
