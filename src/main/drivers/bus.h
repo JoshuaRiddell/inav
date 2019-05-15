@@ -102,7 +102,7 @@ typedef enum {
     DEVHW_MS5611,
     DEVHW_MS5607,
     DEVHW_LPS25H,
-    DEVHW_MS583730,
+    DEVHW_ARDUINO,
 
     /* Compass chips */
     DEVHW_HMC5883,

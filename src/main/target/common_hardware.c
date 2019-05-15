@@ -121,7 +121,7 @@
     #if !defined(MS583730_I2C_BUS)
         #define MS583730_I2C_BUS BARO_I2C_BUS
     #endif
-    BUSDEV_REGISTER_I2C(busdev_ms583730,      DEVHW_MS583730,       MS583730_I2C_BUS,     0x76,               NONE,           DEVFLAGS_USE_RAW_REGISTERS);
+    BUSDEV_REGISTER_I2C(busdev_ms583730,      DEVHW_ARDUINO,       MS583730_I2C_BUS,     0x75,               NONE,           DEVFLAGS_USE_RAW_REGISTERS);
 #endif
 
 /** COMPASS SENSORS **/

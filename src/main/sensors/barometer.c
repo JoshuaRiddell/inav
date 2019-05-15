@@ -178,7 +178,7 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
         break;
     }
 
-    // addBootlogEvent6(BOOT_EVENT_BARO_DETECTION, BOOT_EVENT_FLAGS_NONE, baroHardware, 0, 0, 0);
+    addBootlogEvent6(BOOT_EVENT_BARO_DETECTION, BOOT_EVENT_FLAGS_NONE, baroHardware, 0, 0, 0);
 
     if (baroHardware == BARO_NONE) {
         sensorsClear(SENSOR_BARO);
@@ -209,7 +209,7 @@ altitude pressure
 At sea level an altitude change of 100m results in a pressure change of 1196Pa, at 1000m pressure change is 1085Pa
 So set glitch threshold at 1000 - this represents an altitude change of approximately 100m.
 */
-#define PRESSURE_DELTA_GLITCH_THRESHOLD 1000
+#define PRESSURE_DELTA_GLITCH_THRESHOLD 10000
 static int32_t applyBarometerMedianFilter(int32_t newPressureReading)
 {
     static int32_t barometerFilterSamples[PRESSURE_SAMPLES_MEDIAN];
@@ -276,12 +276,14 @@ uint32_t baroUpdate(void)
 
 static float pressureToAltitude(const float pressure)
 {
-    return (1.0f - powf(pressure / 101325.0f, 0.190295f)) * 4433000.0f;
+    // return (1.0f - powf(pressure / 101325.0f, 0.190295f)) * 4433000.0f;
+    return (101325.0f - pressure)/100; // change to underwater calculator
 }
 
 static float altitudeToPressure(const float altCm)
 {
-    return powf(1.0f - (altCm / 4433000.0f), 5.254999) * 101325.0f;
+    // return powf(1.0f - (altCm / 4433000.0f), 5.254999) * 101325.0f;
+    return 101325.0f - altCm * 100; // change to underwater calculator
 }
 
 bool baroIsCalibrationComplete(void)
