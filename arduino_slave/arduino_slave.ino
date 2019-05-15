@@ -69,8 +69,6 @@ void loop() {
   if (ping.update()) {
     distance = ping.distance();
     confidence = ping.confidence();
-
-    Serial.println(distance);
   }
 }
 
@@ -95,7 +93,6 @@ void requestEvent(void) {
         break;
     case CMD_DISTANCE:
         Wire.write((uint8_t *)&distance, 4);
-        Serial.println(distance);
         break;
     case CMD_CONFIDENCE:
         Wire.write((uint8_t *)&confidence, 2);
