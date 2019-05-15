@@ -36,6 +36,8 @@
 
 #define CMD_PRESSURE        0x20
 #define CMD_TEMPERATURE     0x21
+#define CMD_DISTANCE        0x22
+#define CMD_CONFIDENCE      0x23
 #define CMD_WHOAMI          0x77
 #define WHOAMI_ID               0x69
 

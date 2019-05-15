@@ -42,6 +42,7 @@
 #include "drivers/rangefinder/rangefinder_hcsr04_i2c.h"
 #include "drivers/rangefinder/rangefinder_vl53l0x.h"
 #include "drivers/rangefinder/rangefinder_virtual.h"
+#include "drivers/rangefinder/rangefinder_brping.h"
 
 #include "fc/config.h"
 #include "fc/runtime_config.h"
@@ -58,7 +59,7 @@
 
 rangefinder_t rangefinder;
 
-#define RANGEFINDER_HARDWARE_TIMEOUT_MS         500     // Accept 500ms of non-responsive sensor, report HW failure otherwise
+#define RANGEFINDER_HARDWARE_TIMEOUT_MS         1500     // Accept 500ms of non-responsive sensor, report HW failure otherwise
 
 #define RANGEFINDER_DYNAMIC_THRESHOLD           600     //Used to determine max. usable rangefinder disatance
 #define RANGEFINDER_DYNAMIC_FACTOR              75
@@ -67,7 +68,7 @@ rangefinder_t rangefinder;
 PG_REGISTER_WITH_RESET_TEMPLATE(rangefinderConfig_t, rangefinderConfig, PG_RANGEFINDER_CONFIG, 1);
 
 PG_RESET_TEMPLATE(rangefinderConfig_t, rangefinderConfig,
-    .rangefinder_hardware = RANGEFINDER_NONE,
+    .rangefinder_hardware = RANGEFINDER_BRPING,
     .use_median_filtering = 0,
 );
 
@@ -95,6 +96,15 @@ static bool rangefinderDetect(rangefinderDev_t * dev, uint8_t rangefinderHardwar
     requestedSensors[SENSOR_INDEX_RANGEFINDER] = rangefinderHardwareToUse;
 
     switch (rangefinderHardwareToUse) {
+        case RANGEFINDER_BRPING:
+#ifdef USE_RANGEFINDER_BRPING
+            if (brpingDetect(dev)) {
+                rangefinderHardware = RANGEFINDER_BRPING;
+                rescheduleTask(TASK_RANGEFINDER, TASK_PERIOD_MS(RANGEFINDER_BRPING_TASK_PERIOD_MS));
+            }
+#endif
+            break;
+
         case RANGEFINDER_HCSR04:
 #ifdef USE_RANGEFINDER_HCSR04
             {
