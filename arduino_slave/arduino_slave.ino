@@ -1,14 +1,9 @@
-#include <Wire.h>
-#include "softMS5837.h"
+#include "MS5837.h"
 #include "ping1d.h"
-#include "SoftwareSerial.h"
+#include <Wire.h>
 
-static const uint8_t arduinoRxPin = 9;
-static const uint8_t arduinoTxPin = 10;
-SoftwareSerial pingSerial = SoftwareSerial(arduinoRxPin, arduinoTxPin);
-static Ping1D ping { pingSerial };
-
-softMS5837 pressure_sensor;
+static Ping1D ping { Serial1 };
+MS5837 pressure_sensor;
 
 #define CMD_PRESSURE        0x20
 #define CMD_TEMPERATURE     0x21
@@ -17,29 +12,25 @@ softMS5837 pressure_sensor;
 #define CMD_WHOAMI          0x77
 #define WHOAMI_ID           0x69
 
-volatile uint8_t lastByte = 0x00;
+volatile uint8_t lastByte = 0;
 
 void setup() {
-  pingSerial.begin(9600);
-  Serial.begin(9600);
+  Serial1.begin(115200);
+  Serial.begin(115200);
 
   Serial.println("starting");
 
   while (!ping.initialize()) {
       Serial.println("\nPing device failed to initialize!");
       Serial.println("Are the Ping rx/tx wired correctly?");
-      Serial.print("Ping rx is the green wire, and should be connected to Arduino pin ");
-      Serial.print(arduinoTxPin);
-      Serial.println(" (Arduino tx)");
-      Serial.print("Ping tx is the white wire, and should be connected to Arduino pin ");
-      Serial.print(arduinoRxPin);
-      Serial.println(" (Arduino rx)");
+      Serial.print("Ping rx is the green wire, and should be connected to Arduino pin tx");
+      Serial.print("Ping tx is the white wire, and should be connected to Arduino pin rx");
       delay(2000);
   }
   
-  Wire.begin(0x75);                // join i2c bus with address 0x75
-  Wire.onReceive(receiveEvent); // register event
-  Wire.onRequest(requestEvent);
+  Wire1.begin(0x75);                // join i2c bus with address 0x75
+  Wire1.onReceive(receiveEvent); // register event
+  Wire1.onRequest(requestEvent);
 
   while (!pressure_sensor.init()) {
     Serial.println("Init failed!");
@@ -49,7 +40,7 @@ void setup() {
     delay(2000);
   }
   
-  pressure_sensor.setModel(softMS5837::MS5837_30BA);
+  pressure_sensor.setModel(MS5837::MS5837_30BA);
   pressure_sensor.setFluidDensity(997); // kg/m^3 (freshwater, 1029 for seawater)
 
   Serial.println("initting loop");
@@ -73,38 +64,38 @@ void loop() {
     confidence = ping.confidence();
   }
 
-//  Serial.println(distance);
+  Serial.print(pressure);
+  Serial.print("  ");
+  Serial.println(distance);
 }
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void receiveEvent(int howMany) {
-  while (Wire.available()) {
-    lastByte = Wire.read();
-//    Serial.println(lastByte, HEX);
+  while (Wire1.available()) {
+    lastByte = Wire1.read();
   }
 }
 
 void requestEvent(void) {
-//  Serial.println("request");
+//  Serial.print("request ");
+//  Serial.println(lastByte, HEX);
   
   switch (lastByte) {
     case CMD_WHOAMI:
-        Wire.write(WHOAMI_ID);
+        Wire1.write(WHOAMI_ID);
         break;
     case CMD_PRESSURE:
-//        Serial.println(pressure);
-        Wire.write((uint8_t *)&pressure, 4);
+        Wire1.write((uint8_t *)&pressure, 4);
         break;
     case CMD_TEMPERATURE:
-        Wire.write((uint8_t *)&temperature, 4);
+        Wire1.write((uint8_t *)&temperature, 4);
         break;
     case CMD_DISTANCE:
-//        Serial.println(distance);
-        Wire.write((uint8_t *)&distance, 4);
+        Wire1.write((uint8_t *)&distance, 4);
         break;
     case CMD_CONFIDENCE:
-        Wire.write((uint8_t *)&confidence, 2);
+        Wire1.write((uint8_t *)&confidence, 2);
         break;
   } 
 }
