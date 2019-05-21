@@ -1,8 +1,8 @@
 #include "softMS5837.h"
 #include <SoftWire.h>
 
-uint8_t sdaPin = A2;
-uint8_t sclPin = A3;
+uint8_t sdaPin = A0;
+uint8_t sclPin = A1;
 SoftWire softwire(sdaPin, sclPin);
 
 #define MS5837_ADDR               0x76  

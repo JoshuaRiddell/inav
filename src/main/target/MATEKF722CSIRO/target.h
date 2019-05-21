@@ -93,7 +93,7 @@
 
 #define USE_RANGEFINDER
 #define USE_RANGEFINDER_BRPING
-#define RANGEFINDER_I2C_BUS     BUS_I2C1
+#define RANGEFINDER_I2C_BUS     BUS_I2C2
 
 // *************** SPI2 OSD ***********************
 #define USE_SPI_DEVICE_2

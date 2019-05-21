@@ -88,15 +88,15 @@ static int32_t brpingRangefinderGetDistance(rangefinderDev_t *rangefinder)
 bool brpingDetect(rangefinderDev_t *rangefinder)
 {
     rangefinder->busDev = busDeviceInit(BUSTYPE_I2C, DEVHW_ARDUINO, 0, OWNER_RANGEFINDER);
-    addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 9, 0, 0, 0);
+    // addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 9, 0, 0, 0);
 
     if (rangefinder->busDev == NULL) {
-    addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 10, 0, 0, 0);
+        addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 10, 0, 0, 0);
         return false;
     }
 
     if (!deviceDetect(rangefinder->busDev)) {
-    addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 11, 0, 0, 0);
+        addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 11, 0, 0, 0);
         busDeviceDeInit(rangefinder->busDev);
         return false;
     }

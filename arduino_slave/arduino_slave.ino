@@ -51,6 +51,8 @@ void setup() {
   
   pressure_sensor.setModel(softMS5837::MS5837_30BA);
   pressure_sensor.setFluidDensity(997); // kg/m^3 (freshwater, 1029 for seawater)
+
+  Serial.println("initting loop");
 }
 
 int32_t pressure = 0;
@@ -59,7 +61,7 @@ uint32_t distance = 0;
 uint16_t confidence = 0;
 
 void loop() {
-  delay(100);
+//  delay(50);
 
   // read pressure sensor over software i2c
   pressure_sensor.read();
@@ -70,6 +72,8 @@ void loop() {
     distance = ping.distance();
     confidence = ping.confidence();
   }
+
+//  Serial.println(distance);
 }
 
 // function that executes whenever data is requested by master
@@ -77,21 +81,26 @@ void loop() {
 void receiveEvent(int howMany) {
   while (Wire.available()) {
     lastByte = Wire.read();
+//    Serial.println(lastByte, HEX);
   }
 }
 
 void requestEvent(void) {
+//  Serial.println("request");
+  
   switch (lastByte) {
     case CMD_WHOAMI:
         Wire.write(WHOAMI_ID);
         break;
     case CMD_PRESSURE:
+//        Serial.println(pressure);
         Wire.write((uint8_t *)&pressure, 4);
         break;
     case CMD_TEMPERATURE:
         Wire.write((uint8_t *)&temperature, 4);
         break;
     case CMD_DISTANCE:
+//        Serial.println(distance);
         Wire.write((uint8_t *)&distance, 4);
         break;
     case CMD_CONFIDENCE:
