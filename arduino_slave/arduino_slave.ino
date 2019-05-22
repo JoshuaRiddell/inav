@@ -15,6 +15,10 @@ MS5837 pressure_sensor;
 volatile uint8_t lastByte = 0;
 
 void setup() {
+  Wire1.begin(0x75);                // join i2c bus with address 0x75
+  Wire1.onReceive(receiveEvent); // register event
+  Wire1.onRequest(requestEvent);
+  
   Serial1.begin(115200);
   Serial.begin(115200);
 
@@ -27,10 +31,6 @@ void setup() {
       Serial.print("Ping tx is the white wire, and should be connected to Arduino pin rx");
       delay(2000);
   }
-  
-  Wire1.begin(0x75);                // join i2c bus with address 0x75
-  Wire1.onReceive(receiveEvent); // register event
-  Wire1.onRequest(requestEvent);
 
   while (!pressure_sensor.init()) {
     Serial.println("Init failed!");
