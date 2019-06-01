@@ -2,7 +2,7 @@
 #include "ping1d.h"
 #include <Wire.h>
 
-static Ping1D ping { Serial1 };
+static Ping1D ping { Serial2 };
 MS5837 pressure_sensor;
 
 #define CMD_PRESSURE        0x20
@@ -13,13 +13,17 @@ MS5837 pressure_sensor;
 #define WHOAMI_ID           0x69
 
 volatile uint8_t lastByte = 0;
+uint8_t ledPin = 13;
 
 void setup() {
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, HIGH);
+  
   Wire1.begin(0x75);                // join i2c bus with address 0x75
   Wire1.onReceive(receiveEvent); // register event
   Wire1.onRequest(requestEvent);
   
-  Serial1.begin(115200);
+  Serial2.begin(115200);
   Serial.begin(115200);
 
   Serial.println("starting");
@@ -44,6 +48,7 @@ void setup() {
   pressure_sensor.setFluidDensity(997); // kg/m^3 (freshwater, 1029 for seawater)
 
   Serial.println("initting loop");
+  digitalWrite(ledPin, LOW);
 }
 
 int32_t pressure = 0;
@@ -52,7 +57,9 @@ uint32_t distance = 0;
 uint16_t confidence = 0;
 
 void loop() {
-//  delay(50);
+  digitalWrite(ledPin, HIGH);
+  delay(50);
+  digitalWrite(ledPin, LOW);
 
   // read pressure sensor over software i2c
   pressure_sensor.read();
