@@ -70,6 +70,7 @@ typedef enum {
     DEBUG_ACC,
     DEBUG_GENERIC,
     DEBUG_GYRO_STDDEV,
+    DEBUG_RANGEFINDER,
     DEBUG_COUNT
 } debugType_e;
 

@@ -90,6 +90,8 @@
 #include "sensors/sensors.h"
 #include "sensors/pitotmeter.h"
 #include "sensors/temperature.h"
+#include "sensors/barometer.h"
+#include "sensors/rangefinder.h"
 
 #ifdef USE_HARDWARE_REVISION_DETECTION
 #include "hardware_revision.h"
@@ -417,7 +419,7 @@ static void osdFormatAltitudeSymbol(char *buff, int32_t alt)
 {
     switch ((osd_unit_e)osdConfig()->units) {
         case OSD_UNIT_IMPERIAL:
-            if (osdFormatCentiNumber(buff + 1, CENTIMETERS_TO_CENTIFEET(alt), 1000, 0, 2, 3)) {
+            if (osdFormatCentiNumber(buff + 1, CENTIMETERS_TO_CENTIFEET(alt), 1000, 1, 2, 3)) {
                 // Scaled to kft
                 buff[0] = SYM_ALT_KFT;
             } else {
@@ -429,7 +431,7 @@ static void osdFormatAltitudeSymbol(char *buff, int32_t alt)
             FALLTHROUGH;
         case OSD_UNIT_METRIC:
             // alt is alredy in cm
-            if (osdFormatCentiNumber(buff+1, alt, 1000, 0, 2, 3)) {
+            if (osdFormatCentiNumber(buff+1, alt, 1000, 1, 2, 3)) {
                 // Scaled to km
                 buff[0] = SYM_ALT_KM;
             } else {
@@ -1494,6 +1496,27 @@ static bool osdDrawSingleElement(uint8_t item)
             break;
         }
 
+    case OSD_BARO_READING:
+        {
+            int32_t baro = baroGetLatestAltitude();
+            buff[0] = 'B';
+            osdFormatCentiNumber(buff + 1, baro, 1000, 1, 2, 3);
+            break;
+        }
+
+    case OSD_RANGEFINDER_READING:
+        {
+            int32_t rangefinder = rangefinderGetLatestAltitude();
+            buff[0] = 'R';
+            osdFormatCentiNumber(buff + 1, rangefinder, 1000, 1, 2, 3);
+
+            if (rangefinder < 100) {
+                TEXT_ATTRIBUTES_ADD_BLINK(elemAttr);
+                TEXT_ATTRIBUTES_ADD_INVERTED(elemAttr);
+            }
+            break;
+        }
+
     case OSD_ALTITUDE_MSL:
         {
             int32_t alt = osdGetAltitudeMsl();
@@ -1613,7 +1636,7 @@ static bool osdDrawSingleElement(uint8_t item)
 
     case OSD_CRAFT_NAME:
         if (strlen(systemConfig()->name) == 0)
-            strcpy(buff, "CRAFT_NAME");
+            strcpy(buff, "VERTIGO");
         else {
             for (int i = 0; i < MAX_NAME_LENGTH; i++) {
                 buff[i] = sl_toupper((unsigned char)systemConfig()->name[i]);
@@ -2541,27 +2564,29 @@ void osdDrawNextElement(void)
 
 void pgResetFn_osdConfig(osdConfig_t *osdConfig)
 {
-    osdConfig->item_pos[0][OSD_ALTITUDE] = OSD_POS(1, 0) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_ALTITUDE] = OSD_POS(1, 1) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_MAIN_BATT_VOLTAGE] = OSD_POS(12, 0) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_SAG_COMPENSATED_MAIN_BATT_VOLTAGE] = OSD_POS(12, 1);
 
-    osdConfig->item_pos[0][OSD_RSSI_VALUE] = OSD_POS(23, 0) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_RSSI_VALUE] = OSD_POS(23, 0);
     //line 2
     osdConfig->item_pos[0][OSD_HOME_DIST] = OSD_POS(1, 1);
+    osdConfig->item_pos[0][OSD_BARO_READING] = OSD_POS(1, 2) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_RANGEFINDER_READING] = OSD_POS(1, 3) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_TRIP_DIST] = OSD_POS(1, 2);
     osdConfig->item_pos[0][OSD_MAIN_BATT_CELL_VOLTAGE] = OSD_POS(12, 1);
     osdConfig->item_pos[0][OSD_MAIN_BATT_SAG_COMPENSATED_CELL_VOLTAGE] = OSD_POS(12, 1);
     osdConfig->item_pos[0][OSD_GPS_SPEED] = OSD_POS(23, 1);
     osdConfig->item_pos[0][OSD_3D_SPEED] = OSD_POS(23, 1);
 
-    osdConfig->item_pos[0][OSD_THROTTLE_POS] = OSD_POS(1, 2) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_THROTTLE_POS] = OSD_POS(1, 2);
     osdConfig->item_pos[0][OSD_THROTTLE_POS_AUTO_THR] = OSD_POS(6, 2);
     osdConfig->item_pos[0][OSD_HEADING] = OSD_POS(12, 2);
     osdConfig->item_pos[0][OSD_CRUISE_HEADING_ERROR] = OSD_POS(12, 2);
     osdConfig->item_pos[0][OSD_CRUISE_HEADING_ADJUSTMENT] = OSD_POS(12, 2);
     osdConfig->item_pos[0][OSD_HEADING_GRAPH] = OSD_POS(18, 2);
-    osdConfig->item_pos[0][OSD_CURRENT_DRAW] = OSD_POS(1, 3) | OSD_VISIBLE_FLAG;
-    osdConfig->item_pos[0][OSD_MAH_DRAWN] = OSD_POS(1, 4) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_CURRENT_DRAW] = OSD_POS(1, 5) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_MAH_DRAWN] = OSD_POS(1, 6) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_WH_DRAWN] = OSD_POS(1, 5);
     osdConfig->item_pos[0][OSD_BATTERY_REMAINING_CAPACITY] = OSD_POS(1, 6);
     osdConfig->item_pos[0][OSD_BATTERY_REMAINING_PERCENT] = OSD_POS(1, 7);
@@ -2581,7 +2606,7 @@ void pgResetFn_osdConfig(osdConfig_t *osdConfig)
     osdConfig->item_pos[0][OSD_ARTIFICIAL_HORIZON] = OSD_POS(8, 6) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_HORIZON_SIDEBARS] = OSD_POS(8, 6) | OSD_VISIBLE_FLAG;
 
-    osdConfig->item_pos[0][OSD_CRAFT_NAME] = OSD_POS(20, 2);
+    osdConfig->item_pos[0][OSD_CRAFT_NAME] = OSD_POS(20, 2) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_VTX_CHANNEL] = OSD_POS(8, 6);
 
     osdConfig->item_pos[0][OSD_ONTIME] = OSD_POS(23, 8);

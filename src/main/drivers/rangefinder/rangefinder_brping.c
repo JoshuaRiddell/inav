@@ -46,7 +46,7 @@
 #define CMD_WHOAMI          0x77
 #define WHOAMI_ID           0x69
 
-#define DETECTION_CONE_DECIDEGREES 300
+#define DETECTION_CONE_DECIDEGREES 600
 #define DETECTION_CONE_EXTENDED_DECIDEGREES 450
 
 #define DETECTION_MAX_RETRY_COUNT   5
@@ -82,13 +82,14 @@ static int32_t brpingRangefinderGetDistance(rangefinderDev_t *rangefinder)
 
     busReadBuf(rangefinder->busDev, CMD_DISTANCE, (uint8_t *)&distance_raw, 4);
 
+    DEBUG_SET(DEBUG_RANGEFINDER, 0, distance_raw);
+
     return (int32_t)distance_raw/10;
 }
 
 bool brpingDetect(rangefinderDev_t *rangefinder)
 {
     rangefinder->busDev = busDeviceInit(BUSTYPE_I2C, DEVHW_ARDUINO, 0, OWNER_RANGEFINDER);
-    // addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 9, 0, 0, 0);
 
     if (rangefinder->busDev == NULL) {
         addBootlogEvent6(BOOT_EVENT_RANGEFINDER_DETECTION, BOOT_EVENT_FLAGS_NONE, 10, 0, 0, 0);
@@ -102,7 +103,7 @@ bool brpingDetect(rangefinderDev_t *rangefinder)
     }
 
     rangefinder->delayMs = RANGEFINDER_BRPING_TASK_PERIOD_MS;
-    rangefinder->maxRangeCm = 999;
+    rangefinder->maxRangeCm = 20000;
     rangefinder->detectionConeDeciDegrees = DETECTION_CONE_DECIDEGREES;
     rangefinder->detectionConeExtendedDeciDegrees = DETECTION_CONE_EXTENDED_DECIDEGREES;
 
