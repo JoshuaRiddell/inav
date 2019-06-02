@@ -48,7 +48,8 @@ extern gyro_t gyro;
 
 typedef struct gyroConfig_s {
     sensor_align_e gyro_align;              // gyro alignment
-    uint8_t  gyroMovementCalibrationThreshold; // people keep forgetting that moving model while init results in wrong gyro offsets. and then they never reset gyro. so this is now on by default.
+    uint16_t  gyroMovementCalibrationThreshold; // people keep forgetting that moving model while init results in wrong gyro offsets. and then they never reset gyro. so this is now on by default.
+    uint16_t gyroCalibrationTime;           // calibration time in ms
     uint8_t  __deprecated_0;                // Was: gyro sync denominator
     uint8_t  gyroSync;                      // Enable interrupt based loop
     uint16_t looptime;                      // imu loop time in us

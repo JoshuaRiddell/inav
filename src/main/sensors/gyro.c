@@ -102,7 +102,8 @@ PG_RESET_TEMPLATE(gyroConfig_t, gyroConfig,
     .gyro_lpf = GYRO_LPF_42HZ,      // 42HZ value is defined for Invensense/TDK gyros
     .gyro_soft_lpf_hz = 60,
     .gyro_align = ALIGN_DEFAULT,
-    .gyroMovementCalibrationThreshold = 32,
+    .gyroMovementCalibrationThreshold = 500,
+    .gyroCalibrationTime = 10000,
     .looptime = 1000,
     .gyroSync = 1,
     .gyro_to_use = 0,
@@ -341,7 +342,7 @@ void gyroInitFilters(void)
 
 void gyroStartCalibration(void)
 {
-    zeroCalibrationStartV(&gyroCalibration, CALIBRATING_GYRO_TIME_MS, gyroConfig()->gyroMovementCalibrationThreshold, false);
+    zeroCalibrationStartV(&gyroCalibration, gyroConfig()->gyroCalibrationTime, gyroConfig()->gyroMovementCalibrationThreshold, false);
 }
 
 bool gyroIsCalibrationComplete(void)
@@ -358,7 +359,7 @@ STATIC_UNIT_TESTED void performGyroCalibration(gyroDev_t *dev, zeroCalibrationVe
     v.v[1] = dev->gyroADCRaw[1];
     v.v[2] = dev->gyroADCRaw[2];
 
-    zeroCalibrationAddValueV(gyroCalibration, &v);
+    zeroCalibrationAddValueV(gyroCalibration, &v, true);
 
     // Check if calibration is complete after this cycle
     if (zeroCalibrationIsCompleteV(gyroCalibration)) {

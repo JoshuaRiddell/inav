@@ -125,7 +125,7 @@ bool zeroCalibrationIsSuccessfulV(zeroCalibrationVector_t * s)
     return (s->params.state == ZERO_CALIBRATION_DONE);
 }
 
-void zeroCalibrationAddValueV(zeroCalibrationVector_t * s, const fpVector3_t * v)
+void zeroCalibrationAddValueV(zeroCalibrationVector_t * s, const fpVector3_t * v, bool isgyro)
 {
     if (s->params.state != ZERO_CALIBRATION_IN_PROGRESS) {
         return;
@@ -138,6 +138,17 @@ void zeroCalibrationAddValueV(zeroCalibrationVector_t * s, const fpVector3_t * v
     }
 
     s->params.sampleCount++;
+
+    if (debugMode == DEBUG_GYRO_STDDEV) {
+        for (int i = 0; i < 3; i++) {
+            const float dev = devStandardDeviation(&s->val[i].stdDev);
+
+            if (isgyro) {
+                DEBUG_SET(DEBUG_GYRO_STDDEV, i, dev);
+            }
+        }
+    }
+
 
     // Check if calibration is complete
     if ((millis() - s->params.startTimeMs) > s->params.windowSizeMs) {

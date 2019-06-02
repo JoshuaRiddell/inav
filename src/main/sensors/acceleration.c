@@ -432,7 +432,7 @@ static void performAcclerationCalibration(void)
         v.v[1] = accADC[1];
         v.v[2] = accADC[2];
 
-        zeroCalibrationAddValueV(&zeroCalibration, &v);
+        zeroCalibrationAddValueV(&zeroCalibration, &v, false);
 
         if (zeroCalibrationIsCompleteV(&zeroCalibration)) {
             if (zeroCalibrationIsSuccessfulV(&zeroCalibration)) {

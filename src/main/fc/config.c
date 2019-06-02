@@ -111,7 +111,7 @@ PG_REGISTER_WITH_RESET_TEMPLATE(systemConfig_t, systemConfig, PG_SYSTEM_CONFIG, 
 PG_RESET_TEMPLATE(systemConfig_t, systemConfig,
     .current_profile_index = 0,
     .current_battery_profile_index = 0,
-    .debug_mode = DEBUG_NONE,
+    .debug_mode = DEBUG_GYRO_STDDEV,
     .i2c_speed = I2C_SPEED_400KHZ,
     .cpuUnderclock = 0,
     .throttle_tilt_compensation_strength = 0,      // 0-100, 0 - disabled

@@ -69,6 +69,7 @@ typedef enum {
     DEBUG_SMARTAUDIO,
     DEBUG_ACC,
     DEBUG_GENERIC,
+    DEBUG_GYRO_STDDEV,
     DEBUG_COUNT
 } debugType_e;
 

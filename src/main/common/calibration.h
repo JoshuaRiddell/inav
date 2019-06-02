@@ -72,5 +72,5 @@ void zeroCalibrationGetZeroS(zeroCalibrationScalar_t * s, float * v);
 void zeroCalibrationStartV(zeroCalibrationVector_t * s, timeMs_t window, float threshold, bool allowFailure);
 bool zeroCalibrationIsCompleteV(zeroCalibrationVector_t * s);
 bool zeroCalibrationIsSuccessfulV(zeroCalibrationVector_t * s);
-void zeroCalibrationAddValueV(zeroCalibrationVector_t * s, const fpVector3_t * v);
+void zeroCalibrationAddValueV(zeroCalibrationVector_t * s, const fpVector3_t * v, bool isgyro);
 void zeroCalibrationGetZeroV(zeroCalibrationVector_t * s, fpVector3_t * v);

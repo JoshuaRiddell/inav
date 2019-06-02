@@ -7,7 +7,7 @@ tables:
     values: ["NONE", "AUTO", "ADXL345", "MPU6050", "MMA845x", "BMA280", "LSM303DLHC", "MPU6000", "MPU6500", "MPU9250", "BMI160", "ICM20689", "FAKE"]
     enum: accelerationSensor_e
   - name: rangefinder_hardware
-    values: ["NONE", "HCSR04", "SRF10", "INAV_I2C", "VL53L0X", "MSP", "UIB", "BENEWAKE"]
+    values: ["NONE", "HCSR04", "SRF10", "INAV_I2C", "VL53L0X", "MSP", "UIB", "BENEWAKE", "BR_PING"]
     enum: rangefinderType_e
   - name: mag_hardware
     values: ["NONE", "AUTO", "HMC5883", "AK8975", "GPSMAG", "MAG3110", "AK8963", "IST8310", "QMC5883", "MPU9250", "IST8308", "LIS3MDL", "FAKE"]
@@ -77,7 +77,7 @@ tables:
   - name: debug_modes
     values: ["NONE", "GYRO", "NOTCH", "NAV_LANDING", "FW_ALTITUDE", "AGL", "FLOW_RAW",
       "FLOW", "SBUS", "FPORT", "ALWAYS", "STAGE2", "WIND_ESTIMATOR", "SAG_COMP_VOLTAGE",
-      "VIBE", "CRUISE", "REM_FLIGHT_TIME", "SMARTAUDIO", "ACC", "GENERIC"]
+      "VIBE", "CRUISE", "REM_FLIGHT_TIME", "SMARTAUDIO", "ACC", "GENERIC", "GYRO_STDDEV"]
   - name: async_mode
     values: ["NONE", "GYRO", "ALL"]
   - name: aux_operator
@@ -133,7 +133,10 @@ groups:
         max: 200
       - name: moron_threshold
         field: gyroMovementCalibrationThreshold
-        max: 128
+        max: 60000
+      - name: gyro_calib_time
+        field: gyroCalibrationTime
+        max: 60000
       - name: gyro_notch1_hz
         field: gyro_soft_notch_hz_1
         condition: USE_GYRO_NOTCH_1
