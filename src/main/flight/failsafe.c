@@ -166,7 +166,7 @@ void failsafeInit(void)
 {
     failsafeState.events = 0;
     failsafeState.monitoring = false;
-    failsafeState.suspended = false;
+    failsafeState.suspended = true;
 }
 
 #ifdef USE_NAV
@@ -306,7 +306,7 @@ bool failsafeIsSuspended(void)
 
 void failsafeOnRxResume(void)
 {
-    failsafeState.suspended = false;                                    // restart monitoring
+    failsafeState.suspended = true;                                    // restart monitoring
     failsafeState.validRxDataReceivedAt = millis();                     // prevent RX link down trigger, restart rx link up
     failsafeState.rxLinkState = FAILSAFE_RXLINK_UP;                     // do so while rx link is up
 }
