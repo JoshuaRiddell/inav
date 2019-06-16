@@ -1507,6 +1507,19 @@ static bool osdDrawSingleElement(uint8_t item)
     case OSD_RANGEFINDER_READING:
         {
             int32_t rangefinder = rangefinderGetLatestAltitude();
+            buff[0] = 'A';
+            osdFormatCentiNumber(buff + 1, rangefinder, 1000, 1, 2, 3);
+
+            if (rangefinder < 100) {
+                TEXT_ATTRIBUTES_ADD_BLINK(elemAttr);
+                TEXT_ATTRIBUTES_ADD_INVERTED(elemAttr);
+            }
+            break;
+        }
+
+    case OSD_RANGEFINDER_RAW_READING:
+        {
+            int32_t rangefinder = rangefinderGetLatestRawAltitude();
             buff[0] = 'R';
             osdFormatCentiNumber(buff + 1, rangefinder, 1000, 1, 2, 3);
 
@@ -2573,6 +2586,7 @@ void pgResetFn_osdConfig(osdConfig_t *osdConfig)
     osdConfig->item_pos[0][OSD_HOME_DIST] = OSD_POS(1, 1);
     osdConfig->item_pos[0][OSD_BARO_READING] = OSD_POS(1, 2) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_RANGEFINDER_READING] = OSD_POS(1, 3) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_RANGEFINDER_RAW_READING] = OSD_POS(1, 4) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_TRIP_DIST] = OSD_POS(1, 2);
     osdConfig->item_pos[0][OSD_MAIN_BATT_CELL_VOLTAGE] = OSD_POS(12, 1);
     osdConfig->item_pos[0][OSD_MAIN_BATT_SAG_COMPENSATED_CELL_VOLTAGE] = OSD_POS(12, 1);
