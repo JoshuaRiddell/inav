@@ -111,7 +111,7 @@ PG_RESET_TEMPLATE(navConfig_t, navConfig,
         .rth_altitude = 1000,         // 10m
         .rth_home_altitude = 0,
         .rth_abort_threshold = 50000, // 500m - should be safe for all aircraft
-        .max_terrain_follow_altitude = 100,     // max 1m altitude in terrain following mode
+        .max_terrain_follow_altitude = 3000,     // max 30m altitude in terrain following mode
     },
 
     // MC-specific
@@ -831,7 +831,7 @@ navigationFSMStateFlags_t navGetCurrentStateFlags(void)
 static bool navTerrainFollowingRequested(void)
 {
     // Terrain following not supported on FIXED WING aircraft yet
-    return !STATE(FIXED_WING) && IS_RC_MODE_ACTIVE(BOXSURFACE);
+    return IS_RC_MODE_ACTIVE(BOXSURFACE);
 }
 
 /*************************************************************************************************/
