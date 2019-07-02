@@ -1647,6 +1647,26 @@ static bool osdDrawSingleElement(uint8_t item)
             return true;
         }
 
+    case OSD_TERRAIN_MODE:
+        {
+            char *p = "";
+
+            if (FLIGHT_MODE(NAV_ALTHOLD_MODE)) {
+                // we're in alt hold mode
+
+                if (navigationTerrainFollowingEnabled())
+                    // using AGL
+                    p = "TERRAIN";
+                else
+                    // using altitude (i.e. depth below sea level)
+                    p = "SEA LEVEL";
+            }
+
+            displayWrite(osdDisplayPort, elemPosX, elemPosY, p);
+            return true;
+        }
+        break;
+
     case OSD_CRAFT_NAME:
         if (strlen(systemConfig()->name) == 0)
             strcpy(buff, "VERTIGO");
@@ -2638,6 +2658,7 @@ void pgResetFn_osdConfig(osdConfig_t *osdConfig)
     // that users will want to use both at the same time.
     osdConfig->item_pos[0][OSD_PLUS_CODE] = OSD_POS(0, 12);
     osdConfig->item_pos[0][OSD_FLYMODE] = OSD_POS(13, 12) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_TERRAIN_MODE] = OSD_POS(13, 11) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_GPS_LON] = OSD_POS(18, 12);
 
     osdConfig->item_pos[0][OSD_ROLL_PIDS] = OSD_POS(2, 10);
