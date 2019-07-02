@@ -1644,7 +1644,7 @@ static bool osdDrawSingleElement(uint8_t item)
                 // If navigationRequiresAngleMode() returns false when ALTHOLD is active,
                 // it means it can be combined with ANGLE, HORIZON, ACRO, etc...
                 // and its display is handled by OSD_MESSAGES rather than OSD_FLYMODE.
-                p = " AH ";
+                p = "LOCK";
             } else if (FLIGHT_MODE(NAV_WP_MODE))
                 p = " WP ";
             else if (FLIGHT_MODE(ANGLE_MODE))
@@ -1670,7 +1670,7 @@ static bool osdDrawSingleElement(uint8_t item)
                     p = "TERRAIN";
                 else
                     // using altitude (i.e. depth below sea level)
-                    p = "SEA LEVEL";
+                    p = "DEPTH";
             }
 
             displayWrite(osdDisplayPort, elemPosX, elemPosY, p);
@@ -2670,7 +2670,7 @@ void pgResetFn_osdConfig(osdConfig_t *osdConfig)
     // that users will want to use both at the same time.
     osdConfig->item_pos[0][OSD_PLUS_CODE] = OSD_POS(0, 12);
     osdConfig->item_pos[0][OSD_FLYMODE] = OSD_POS(13, 12) | OSD_VISIBLE_FLAG;
-    osdConfig->item_pos[0][OSD_TERRAIN_MODE] = OSD_POS(13, 11) | OSD_VISIBLE_FLAG;
+    osdConfig->item_pos[0][OSD_TERRAIN_MODE] = OSD_POS(18, 12) | OSD_VISIBLE_FLAG;
     osdConfig->item_pos[0][OSD_GPS_LON] = OSD_POS(18, 12);
 
     osdConfig->item_pos[0][OSD_ROLL_PIDS] = OSD_POS(2, 10);
